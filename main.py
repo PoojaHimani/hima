@@ -79,7 +79,7 @@ class GestureToTextApp:
                 fingertip_pos = self.hand_tracker.get_fingertip_position(landmarks)
                 if fingertip_pos:
                     self.current_trajectory.append(fingertip_pos)
-                    # Draw trajectory
+                    # Draw trajectory on annotated frame
                     self._draw_trajectory(annotated_frame, self.current_trajectory)
             
             # Display status and recognized text
@@ -218,11 +218,14 @@ class GestureToTextApp:
             points_2d.append([px, py])
         
         points = np.array(points_2d, dtype=np.int32)
-        cv2.polylines(frame, [points], False, (0, 255, 0), 3)
         
-        # Draw current fingertip position
+        # Draw thick, bright trajectory lines
+        cv2.polylines(frame, [points], False, (0, 255, 255), 5)
+        
+        # Draw current fingertip position with larger, brighter circle
         if len(points) > 0:
-            cv2.circle(frame, tuple(points[-1]), 8, (0, 0, 255), -1)
+            cv2.circle(frame, tuple(points[-1]), 12, (255, 255, 0), -1)
+            cv2.circle(frame, tuple(points[-1]), 15, (0, 0, 255), 3)
     
     def _draw_ui(self, frame):
         """Draw UI elements on frame"""
@@ -239,25 +242,32 @@ class GestureToTextApp:
             status_color = (0, 0, 255)  # Red for ready
             status_text = "READY"
         
+        # Draw status background box
+        cv2.rectangle(frame, (5, 5), (250, 40), (0, 0, 0), -1)
         cv2.putText(frame, status_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 
                    1, status_color, 2)
         
-        # STHDC info
+        # Draw STHDC info background
+        cv2.rectangle(frame, (5, 45), (350, 80), (0, 0, 0), -1)
         cv2.putText(frame, f"STHDC: {len(self.gesture_recognizer.get_all_labels())} gestures", 
-                   (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+                   (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
         
-        # Recognized text
+        # Draw recognized text background
+        cv2.rectangle(frame, (5, h - 60), (w - 5, h - 5), (0, 0, 0), -1)
         cv2.putText(frame, f"Text: {self.recognized_text}", (10, h - 30), 
                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
         
-        # Voice status
+        # Draw voice status background
         voice_status = "ON" if self.voice_output.enabled else "OFF"
-        cv2.putText(frame, f"Voice: {voice_status}", (10, h - 60), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 1)
+        voice_color = (0, 255, 0) if self.voice_output.enabled else (0, 0, 255)
+        cv2.rectangle(frame, (w - 150, h - 60), (w - 5, h - 40), (0, 0, 0), -1)
+        cv2.putText(frame, f"Voice: {voice_status}", (w - 145, h - 45), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, voice_color, 1)
         
-        # Instructions
+        # Draw instructions background
+        cv2.rectangle(frame, (5, h - 100), (400, h - 65), (0, 0, 0), -1)
         cv2.putText(frame, "R:Record L:Learn C:Clear V:Voice M:Memory Q:Quit", 
-                   (10, h - 90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+                   (10, h - 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
     
     def _clear_text(self):
         """Clear the recognized text"""

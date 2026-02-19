@@ -37,7 +37,7 @@ class HandTracker:
     
     def track_hand(self, frame):
         """
-        Track hand in the given frame and return landmarks
+        Track hand in given frame and return landmarks
         
         Args:
             frame: Input image frame
@@ -48,15 +48,15 @@ class HandTracker:
         # Convert BGR to RGB
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
-        # Process the frame
+        # Process frame
         results = self.hands.process(rgb_frame)
         
-        # Create annotated frame
+        # Create annotated frame (no mirror effect)
         annotated_frame = frame.copy()
         
         landmarks = None
         if results.multi_hand_landmarks:
-            # Get the first hand's landmarks
+            # Get first hand's landmarks
             hand_landmarks = results.multi_hand_landmarks[0]
             landmarks = hand_landmarks
             
@@ -69,7 +69,7 @@ class HandTracker:
                 self.mp_drawing_styles.get_default_hand_connections_style()
             )
             
-            # Highlight the primary fingertip
+            # Highlight primary fingertip
             fingertip_idx = self.fingertip_indices[self.primary_finger]
             fingertip = hand_landmarks.landmark[fingertip_idx]
             h, w = annotated_frame.shape[:2]
